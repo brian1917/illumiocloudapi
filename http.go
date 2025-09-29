@@ -1,0 +1,65 @@
+package illumiocloudapi
+
+import (
+	"bytes"
+	"io"
+	"net/http"
+)
+
+// A tenant represents an Illumio cloud tenant
+type Tenant struct {
+	TenantID  string     `json:"tenant_id"`
+	Cookie    string     `json:"cookie"`
+	Url       string     `json:"url"`
+	Resources []Resource `json:"resources,omitempty"`
+}
+
+// ApiResponse contains the information from the response of the API
+type ApiResponse struct {
+	RespBody   string
+	StatusCode int
+	Header     http.Header
+	Request    *http.Request
+	ReqBody    string
+	Warnings   []string
+}
+
+// HttpReq makes an API call to an Illumio Cloud tenant with sepcified options
+// action must be GET, POST, PUT, or DELETE.
+// url is the full endpoint being called.
+// PUT and POST methods should have a body that is JSON run through the json.marshal function so it's a []byte.
+func (t *Tenant) HttpReq(action, url string, body []byte) (ApiResponse, error) {
+
+	// Setup the http client
+	client := &http.Client{}
+	req, err := http.NewRequest(action, t.Url, bytes.NewBuffer(body))
+	if err != nil {
+		return ApiResponse{}, err
+	}
+	if t.Cookie != "" {
+		req.Header.Add("Cookie", t.Cookie)
+	}
+	req.Header.Add("X-Tenant-Id", t.TenantID)
+	req.Header.Add("Content-Type", "application/json")
+
+	// Make the http request
+	response, err := client.Do(req)
+	if err != nil {
+		return ApiResponse{}, err
+	}
+	defer response.Body.Close()
+
+	// Read the response
+	responseData, err := io.ReadAll(response.Body)
+	if err != nil {
+		return ApiResponse{}, err
+	}
+
+	apiResp := ApiResponse{
+		StatusCode: response.StatusCode,
+		Header:     response.Header,
+		Request:    req,
+		RespBody:   string(responseData),
+	}
+	return apiResp, nil
+}
