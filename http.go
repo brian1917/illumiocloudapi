@@ -2,6 +2,7 @@ package illumiocloudapi
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -12,6 +13,8 @@ type Tenant struct {
 	Cookie    string     `json:"cookie"`
 	Url       string     `json:"url"`
 	Resources []Resource `json:"resources,omitempty"`
+	ClientID  string     `json:"client_id,omitempty"`
+	Key       string     `json:"key,omitempty"`
 }
 
 // ApiResponse contains the information from the response of the API
@@ -36,11 +39,18 @@ func (t *Tenant) HttpReq(action, url string, body []byte) (ApiResponse, error) {
 	if err != nil {
 		return ApiResponse{}, err
 	}
-	if t.Cookie != "" {
-		req.Header.Add("Cookie", t.Cookie)
-	}
+
+	// Set headers and authenticate
 	req.Header.Add("X-Tenant-Id", t.TenantID)
 	req.Header.Add("Content-Type", "application/json")
+	if t.Cookie == "" && (t.ClientID != "" || t.Key != "") {
+		return ApiResponse{}, fmt.Errorf("either cookie or client_id and key must be set for authentication")
+	}
+	if t.ClientID != "" && t.Key != "" {
+		req.SetBasicAuth(t.ClientID, t.Key)
+	} else if t.Cookie != "" {
+		req.Header.Add("Cookie", t.Cookie)
+	}
 
 	// Make the http request
 	response, err := client.Do(req)
