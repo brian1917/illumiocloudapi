@@ -4,12 +4,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+
+	"github.com/brian1917/illumioapi/v2"
 )
 
+// Set the constant cloud base url
+const CloudBaseFqdn = "cloud.illum.io"
+
 // Post sends a POST request to the cloud tenant
-func (t *Tenant) Post(endpoint string, object, createdObject interface{}) (api ApiResponse, err error) {
+func (t *Tenant) Post(endpoint string, object, createdObject interface{}) (api illumioapi.APIResponse, err error) {
 	// Build the API URL
-	apiURL, err := url.Parse(fmt.Sprintf("https://%s/api/v1/%s", t.Url, endpoint))
+	apiURL, err := url.Parse(fmt.Sprintf("https://%s/api/v1/%s", CloudBaseFqdn, endpoint))
 	if err != nil {
 		return api, err
 	}
