@@ -34,7 +34,7 @@ func (t *Tenant) HttpReq(action, url string, body []byte) (illumioapi.APIRespons
 	// Set headers and authenticate
 	req.Header.Add("X-Tenant-Id", t.TenantID)
 	req.Header.Add("Content-Type", "application/json")
-	if t.Cookie == "" && (t.ClientID != "" || t.Key != "") {
+	if t.Cookie == "" && (t.ClientID == "" || t.Key == "") {
 		return illumioapi.APIResponse{}, fmt.Errorf("either cookie or client_id and key must be set for authentication")
 	}
 	if t.ClientID != "" && t.Key != "" {
