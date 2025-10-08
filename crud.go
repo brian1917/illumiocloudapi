@@ -32,7 +32,7 @@ func (t *Tenant) Post(endpoint string, object, createdObject interface{}) (api i
 		return api, err
 	}
 
-	// Unmarshal new label
+	// Unmarshal response
 	json.Unmarshal([]byte(api.RespBody), &createdObject)
 
 	return api, nil
