@@ -11,11 +11,12 @@ import (
 
 // A tenant represents an Illumio cloud tenant
 type Tenant struct {
-	TenantID  string     `json:"tenant_id"`
-	Cookie    string     `json:"cookie"`
-	Resources []Resource `json:"resources,omitempty"`
-	ClientID  string     `json:"client_id,omitempty"`
-	Key       string     `json:"key,omitempty"`
+	TenantID     string     `json:"tenant_id"`
+	Cookie       string     `json:"cookie"`
+	Resources    []Resource `json:"resources,omitempty"`
+	ClientID     string     `json:"client_id,omitempty"`
+	Secret       string     `json:"key,omitempty"`
+	FriendlyName string     `json:"friendly_name,omitempty"`
 }
 
 // HttpReq makes an API call to an Illumio Cloud tenant with sepcified options
@@ -34,11 +35,11 @@ func (t *Tenant) HttpReq(action, url string, body []byte) (illumioapi.APIRespons
 	// Set headers and authenticate
 	req.Header.Add("X-Tenant-Id", t.TenantID)
 	req.Header.Add("Content-Type", "application/json")
-	if t.Cookie == "" && (t.ClientID == "" || t.Key == "") {
+	if t.Cookie == "" && (t.ClientID == "" || t.Secret == "") {
 		return illumioapi.APIResponse{}, fmt.Errorf("either cookie or client_id and key must be set for authentication")
 	}
-	if t.ClientID != "" && t.Key != "" {
-		req.SetBasicAuth(t.ClientID, t.Key)
+	if t.ClientID != "" && t.Secret != "" {
+		req.SetBasicAuth(t.ClientID, t.Secret)
 	} else if t.Cookie != "" {
 		req.Header.Add("Cookie", t.Cookie)
 	}
